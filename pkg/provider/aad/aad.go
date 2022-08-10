@@ -124,6 +124,7 @@ type mfaResponse struct {
 	SessionID     string      `json:"SessionId"`
 	CorrelationID string      `json:"CorrelationId"`
 	Timestamp     time.Time   `json:"Timestamp"`
+	Entropy       int         `json:"Entropy"`
 }
 
 // A given method for a user to prove their indentity
@@ -461,7 +462,11 @@ func (ac *Client) processMfa(mfas []userProof, convergedResponse *ConvergedRespo
 			mfaReq.AdditionalAuthData = verifyCode
 		}
 		if mfaReq.AuthMethodID == "PhoneAppNotification" && i == 0 {
-			log.Println("Phone approval required.")
+			if mfaResp.Entropy == 0 {
+				log.Println("Phone approval required.")
+			} else {
+				log.Printf("Phone approval required. Entropy is: %d", mfaResp.Entropy)
+			}
 		}
 
 		mfaResp, err = ac.processMfaEndAuth(mfaReq, convergedResponse)
